@@ -8,7 +8,7 @@ import platform
 import subprocess
 from PyPDF2 import PdfReader, PdfWriter
 from PIL import Image
-import fitz  #
+import fitz  
 import tempfile
 
 app = Flask(__name__)
