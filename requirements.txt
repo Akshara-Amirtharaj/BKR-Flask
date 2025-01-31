@@ -4,4 +4,4 @@ python-docx
 PyPDF2
 Pillow
 PyMuPDF
-fitz
+
