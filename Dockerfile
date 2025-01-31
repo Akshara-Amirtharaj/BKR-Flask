@@ -1,18 +1,15 @@
 # Use the official Python image from the Docker Hub
-FROM python:3.12-slim
+FROM python:3.12
 
 # Set the working directory in the container
 WORKDIR /app
 
 # Install system dependencies
-RUN apt-get update && apt-get install -y --no-install-recommends \
+RUN apt-get update && apt-get install -y \
     libreoffice \
-    fonts-dejavu \
-    ttf-mscorefonts-installer \
-    && apt-get clean \
-    && rm -rf /var/lib/apt/lists/*
+    && apt-get clean
 
-# Copy requirements.txt and install dependencies
+# Copy requirements and install dependencies
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
