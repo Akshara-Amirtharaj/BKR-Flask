@@ -20,4 +20,5 @@ COPY . .
 EXPOSE 8080
 
 # Run the application with gunicorn
-CMD ["gunicorn", "-b", "0.0.0.0:8080", "api:app"]
+CMD ["gunicorn", "-b", "0.0.0.0:8080", "-w", "1", "--threads", "2", "api:app"]
+
