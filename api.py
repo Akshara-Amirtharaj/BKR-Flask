@@ -2,7 +2,6 @@ from flask import Flask, request, jsonify, send_file
 from docx import Document
 from docx.shared import Pt, Inches
 from docx.enum.text import WD_ALIGN_PARAGRAPH
-import streamlit as st
 from datetime import datetime
 import os
 import platform
@@ -240,4 +239,4 @@ def home():
 
 if __name__ == '__main__':
     port = int(os.environ.get("PORT", 8080))
-    app.run(host="0.0.0.0", port=port, debug=True)
+    app.run(host="0.0.0.0", port=port)
