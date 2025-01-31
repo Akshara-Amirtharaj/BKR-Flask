@@ -108,65 +108,28 @@ def convert_to_pdf(doc_path, pdf_path):
     if not os.path.exists(doc_path):
         raise FileNotFoundError(f"Word document not found at {doc_path}")
 
-    # Use a temporary directory for the intermediate PDF file
-    with tempfile.TemporaryDirectory() as temp_dir:
-        temp_pdf_path = os.path.join(temp_dir, "temp_output.pdf")
+    if platform.system() == "Windows":
+        try:
+            import comtypes.client
+            import pythoncom
+            pythoncom.CoInitialize()
+            word = comtypes.client.CreateObject("Word.Application")
+            word.Visible = False
+            doc = word.Documents.Open(doc_path)
+            doc.SaveAs(pdf_path, FileFormat=17)
+            doc.Close()
+            word.Quit()
+        except Exception as e:
+            raise Exception(f"Error using COM on Windows: {e}")
+    else:
+        try:
+            subprocess.run(
+                ['libreoffice', '--headless', '--convert-to', 'pdf', '--outdir', os.path.dirname(pdf_path), doc_path],
+                check=True
+            )
+        except subprocess.CalledProcessError as e:
+            raise Exception(f"Error using LibreOffice: {e}")
 
-        # Step 1: Convert Word to PDF
-        if platform.system() == "Windows":
-            try:
-                import comtypes.client
-                import pythoncom
-                pythoncom.CoInitialize()
-                word = comtypes.client.CreateObject("Word.Application")
-                word.Visible = False
-                doc = word.Documents.Open(doc_path)
-                doc.SaveAs(temp_pdf_path, FileFormat=17)  # FileFormat=17 is for PDF
-                doc.Close()
-                word.Quit()
-            except Exception as e:
-                raise Exception(f"Error using COM on Windows: {e}")
-        else:
-            try:
-                subprocess.run(
-                    ['libreoffice', '--headless', '--convert-to', 'pdf', '--outdir', temp_dir, doc_path],
-                    check=True
-                )
-            except subprocess.CalledProcessError as e:
-                raise Exception(f"Error using LibreOffice: {e}")
-
-        # Step 2: Flatten the PDF (convert to image-based PDF)
-        flatten_pdf(temp_pdf_path, pdf_path)
-
-def flatten_pdf(input_pdf_path, output_pdf_path):
-    """
-    Converts each page of a PDF into an image and re-embeds it to create a flattened, non-editable PDF.
-    """
-    if not os.path.exists(input_pdf_path):
-        raise FileNotFoundError(f"Input PDF file not found: {input_pdf_path}")
-
-    doc = fitz.open(input_pdf_path)  # Open the original PDF
-    writer = PdfWriter()
-
-    with tempfile.TemporaryDirectory() as temp_dir:
-        for page_num in range(len(doc)):
-            page = doc.load_page(page_num)
-            pix = page.get_pixmap(dpi=300)  # Render page to an image with 300 DPI
-            image = Image.frombytes("RGB", [pix.width, pix.height], pix.samples)
-
-            # Save the image as a temporary PDF
-            temp_page_path = os.path.join(temp_dir, f"temp_page_{page_num}.pdf")
-            image.save(temp_page_path, "PDF")
-
-            # Read the temporary PDF and add it to the writer
-            reader = PdfReader(temp_page_path)
-            writer.add_page(reader.pages[0])
-
-    # Save the flattened PDF
-    with open(output_pdf_path, "wb") as f:
-        writer.write(f)
-
-    print(f"Flattened PDF saved at: {output_pdf_path}")
 
 def generate_unique_reference():
     """
