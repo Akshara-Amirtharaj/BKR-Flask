@@ -6,10 +6,7 @@ from datetime import datetime
 import os
 import platform
 import subprocess
-from PyPDF2 import PdfReader, PdfWriter
-from PIL import Image
-import fitz  
-import tempfile
+import base64
 
 app = Flask(__name__)
 
